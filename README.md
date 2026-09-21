@@ -1,4 +1,4 @@
-# Build a documentation agent with Strands
+# Build a documentation agent with Strands harness
 
 This repository is a small, runnable example of an application agent: a documentation maintainer that can inspect a project, update Markdown, run only the checks you explicitly allow, and retain the conversation for a later feedback pass.
 

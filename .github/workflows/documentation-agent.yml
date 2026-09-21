@@ -1,0 +1,48 @@
+name: Documentation agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: A focused documentation request for the agent
+        required: true
+        type: string
+      session_id:
+        description: Optional session ID for a follow-up run
+        required: false
+        default: ci-docs-agent
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    environment: documentation-agent
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install the tutorial agent
+        run: pip install -e ".[dev]"
+
+      - name: Run the documentation agent
+        env:
+          DOCS_AGENT_PROVIDER: ${{ vars.DOCS_AGENT_PROVIDER }}
+          DOCS_AGENT_MODEL_ID: ${{ vars.DOCS_AGENT_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: >-
+          python -m docs_agent.run
+          --session-id "${{ inputs.session_id }}"
+          --task "${{ inputs.task }}"
+
+      - name: Upload the review record
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-agent-run
+          path: artifacts/
+          if-no-files-found: error

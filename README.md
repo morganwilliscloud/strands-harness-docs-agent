@@ -125,8 +125,7 @@ policies, creating the role, allowing GitHub Actions to open PRs, and setting:
 
 The pinned published package is `@strands-agents/harness@0.1.0`. Its default main
 model is Bedrock Claude Opus 5, with Haiku for background extraction/summarization.
-The filmed development build used Opus 4.8. The agent code is unchanged; the
-package's default model has changed. Confirm model availability in your account.
+Confirm model availability in your account.
 
 Strands harness supports other model providers. Bedrock is the configuration
 implemented by this workflow; changing providers also means changing credentials
@@ -135,14 +134,29 @@ Bedrock invocations and GitHub runner usage can incur charges.
 
 ## 4. Merge a change and watch the bot work
 
-The sample includes a small source-and-test patch that adds a `--version` command.
-It deliberately leaves the documentation for the bot to update.
+Try adding a `--version` command to the sample app. Start a branch:
 
 ```sh
 git switch -c feature/version-command
-git apply examples/add-version.patch
+```
+
+In `bin/request-report.mjs`, add this at the beginning of `main(args)`, before
+the existing `--help` check:
+
+```js
+if (args.length === 1 && args[0] === '--version') {
+  console.log('1.0.0')
+  return
+}
+```
+
+Leave the documentation unchanged so the bot has something to update. Verify the
+new command prints `1.0.0`, run the tests, and open a PR:
+
+```sh
+node bin/request-report.mjs --version
 npm test
-git add bin/request-report.mjs test/report.test.mjs
+git add bin/request-report.mjs
 git commit -m "Add a version command"
 git push -u origin feature/version-command
 gh pr create --base main --title "Add a version command" \
@@ -157,8 +171,8 @@ After the agent finishes, the workflow reruns tests and documentation checks,
 rejects changes outside `README.md` and Markdown under `docs/`, and opens a PR
 from a `docs/update-…` branch. Review the result before merging.
 
-The example change can be applied once. For later runs, make another application
-change. For a manual run, use **Run workflow** and supply a full `base_sha` that
+For later runs, make another application change. For a manual run, use
+**Run workflow** and supply a full `base_sha` that
 is an ancestor of `main`. Markdown-only merges do not trigger another docs run.
 
 ## 5. Give it feedback
@@ -246,7 +260,6 @@ scripts/publish-docs-pr.mjs         # create or revise the PR
 bin/                              # Request Report sample application
 docs/                             # Request Report application documentation
 tutorial/                         # setup, providers, and adaptation guides
-examples/add-version.patch        # a code change for the first exercise
 ```
 
 To stop automatic runs, set `DOCS_AGENT_ENABLED` to `false`. Cleanup steps and
@@ -259,6 +272,5 @@ Build an agent for a task you want automated, and share what you make.
 - [Strands harness documentation](https://strandsagents.com/docs/user-guide/harness/)
 - [Configuration and SDK composition](https://strandsagents.com/docs/user-guide/harness/composing-with-sdk/)
 - [CLI quickstart and code export](https://strandsagents.com/docs/user-guide/harness/quickstart/#build-an-agent-with-the-cli)
-- [Implementation provenance and validation](tutorial/implementation.md)
 
 Licensed under [Apache 2.0](LICENSE).

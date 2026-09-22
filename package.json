@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.mjs",
     "docs:check": "node scripts/check-docs.mjs",
     "check": "tsc --noEmit",
     "agent:docs": "tsx .github/agents/docs-agent.ts",

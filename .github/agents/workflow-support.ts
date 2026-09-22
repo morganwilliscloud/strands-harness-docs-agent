@@ -12,12 +12,12 @@ export async function getTask() {
     const feedback = await readFile('run-output/reviewer-feedback.json', 'utf8').catch(() => '[]')
     return `Continue the restored conversation for documentation PR #${process.env.DOCS_PR_NUMBER}.
 The checkout contains that PR's documentation and the current trusted main implementation.
-Read the current files again; previous test results do not verify the new revision.
+Read the current files again; previous verification results do not verify the new revision.
 Apply this authorized review feedback using the docs-maintainer and writing skills:
 ${revision}
 Other new authorized maintainer feedback: ${feedback}
 Only edit README.md or Markdown in docs/, plus the requested run-output/agent-summary.md.
-Run the examples and tests again.
+Run the examples and npm run docs:check again.
 Do not commit, push, or post comments; the workflow updates the same PR after checks.
 Retain explicit ongoing preferences when useful, but do not treat one-off edits as general rules.`
   }
@@ -26,7 +26,7 @@ Retain explicit ongoing preferences when useful, but do not treat one-off edits 
   if (!base && !head && !process.env.GITHUB_ACTIONS) {
     return 'Read the docs-maintainer, docs-writing, and humanize skills. ' +
       'Audit this repository and bring its documentation up to date. ' +
-      'Run the documented examples and tests. Change documentation only, ' +
+      'Run the documented examples and npm run docs:check. Change documentation only, ' +
       'and write the requested run-output/agent-summary.md.'
   }
   if (!base || !head || !/^[a-f0-9]{40}$/.test(base) || !/^[a-f0-9]{40}$/.test(head)) {

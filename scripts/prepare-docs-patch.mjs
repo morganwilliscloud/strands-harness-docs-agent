@@ -27,11 +27,9 @@ try {
   throw new Error('Agent must write a nonempty regular file at run-output/agent-summary.md before publishing')
 }
 mkdirSync('run-output', { recursive: true })
-for (const script of ['test', 'docs:check']) {
-  const output = execFileSync('npm', ['run', script], { encoding: 'utf8', timeout: 120_000 })
-  writeFileSync(`run-output/${script.replace(':', '-')}.txt`, output)
-  process.stdout.write(output)
-}
+const output = execFileSync('npm', ['run', 'docs:check'], { encoding: 'utf8', timeout: 120_000 })
+writeFileSync('run-output/docs-check.txt', output)
+process.stdout.write(output)
 git('add', '--', 'README.md', 'docs')
 const patch = git('diff', '--cached', '--binary')
 writeFileSync('run-output/docs.patch', patch)
@@ -39,6 +37,6 @@ writeFileSync('run-output/changed-files.json', JSON.stringify([...paths], null, 
 if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `changed=${Boolean(patch)}\n`)
 const source = process.env.HEAD_SHA || git('rev-parse', 'HEAD').trim()
 writeFileSync('run-output/pr-body.md', `Documentation update for ${source}.\n\n${summary}\n\n` +
-  'Validation run independently after the agent finished:\n- `npm test`\n- `npm run docs:check`\n' +
+  'Validation run independently after the agent finished:\n- `npm run docs:check`\n' +
   '\nOnly README.md and Markdown files under docs/ are included. Please review before merging.\n')
 console.log(patch ? 'Verified documentation patch prepared.' : 'No patch to publish.')

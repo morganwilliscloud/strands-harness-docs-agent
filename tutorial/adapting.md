@@ -45,14 +45,14 @@ Add scripts for the agent and patch preparation:
 }
 ```
 
-Keep your application's `test` script. Define `docs:check` to verify its actual
-documentation examples and links. The patch preparer runs both scripts before
-publication. Merge the TypeScript configuration if you want the agent included
+Define `docs:check` to verify your application's documentation examples and links.
+The patch preparer runs it before publication. Merge the TypeScript
+configuration if you want the agent included
 in type checks. Commit the updated lockfile.
 
 For a Python, Go, or other application, the bot can still run in TypeScript.
-Install that language's runtime in the workflow and make the two validation
-scripts run the appropriate commands. Node is needed for the bot and its helper
+Install that language's runtime in the workflow and make the documentation
+checks run the appropriate commands. Node is needed for the bot and its helper
 scripts, not for your application.
 
 Add the following to your `.gitignore`:
@@ -89,7 +89,7 @@ using the [setup guide](setup.md). For direct API providers, follow the
 Copying files does not copy GitHub settings, secrets, permissions, roles, or artifacts.
 
 Start with a small source change, inspect the docs PR, and request a revision.
-Run your tests and inspect state restoration before depending on the integration.
+Run your documentation checks and inspect state restoration before depending on the integration.
 
 ## Change the model provider
 
@@ -102,7 +102,7 @@ For a different Bedrock model, update the generated model policy as well.
 
 ## What to keep from the workflow
 
-The separate publisher, authorization checks on feedback, independent tests,
+The separate publisher, authorization checks on feedback, independent documentation checks,
 and stale-PR-head checks are part of the demonstrated implementation. They ensure
 the workflow only publishes a validated documentation patch and does not overwrite
 someone else's newer PR edits. Do not replace them with an unconditional push.

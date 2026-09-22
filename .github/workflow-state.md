@@ -36,7 +36,7 @@ Publishing refuses a stale PR head rather than overwriting concurrent edits.
 New code-change tasks still start separate sessions and share repository memory.
 
 The agent is not fine-tuned: remembered facts are retrieved into its context.
-Check memories against current source. Past test results are historical evidence,
+Check memories against current source. Past verification results are historical evidence,
 not proof that today's code passes. Files persist only while a retained artifact
 is available; active runs refresh the snapshot, but 90 days of inactivity can
 expire the repository's saved memory.

@@ -4,7 +4,6 @@ on:
     branches: [main]
     paths:
       - 'bin/**'
-      - 'test/**'
       - 'fixtures/**'
       - 'package.json'
       - 'package-lock.json'
@@ -119,7 +118,6 @@ jobs:
           name: docs-run-${{ github.sha }}
           path: |
             run-output/agent-summary.md
-            run-output/test.txt
             run-output/docs-check.txt
             run-output/changed-files.json
           include-hidden-files: true

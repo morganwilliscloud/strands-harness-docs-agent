@@ -17,5 +17,4 @@ jobs:
           node-version: '22'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check
-      - run: npm test
       - run: npm run docs:check

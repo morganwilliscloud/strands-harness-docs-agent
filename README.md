@@ -26,7 +26,7 @@ const docsAgent = await createHarness({
     'Use the docs-writing and humanize skills for documentation work. ' +
     'Review code changes, or audit the implementation if no diff is supplied. ' +
     'Create missing docs and update stale ones. Run every runnable example ' +
-    'in the docs and the project test suite. Fix documentation issues only. ' +
+    'in the docs and run npm run docs:check. Fix documentation issues only. ' +
     'Report what passed, what failed, and anything you could not verify. ' +
     'Write that summary to run-output/agent-summary.md, then reply with it.',
 })
@@ -79,7 +79,6 @@ Do not copy this repository's Git history or generated state into that project.
 ```sh
 npm ci
 npm run check
-npm test
 npm run docs:check
 ```
 
@@ -150,11 +149,11 @@ if (args.length === 1 && args[0] === '--version') {
 ```
 
 Leave the documentation unchanged so the bot has something to update. Verify the
-new command prints `1.0.0`, run the tests, and open a PR:
+new command prints `1.0.0`, check the docs, and open a PR:
 
 ```sh
 node bin/request-report.mjs --version
-npm test
+npm run docs:check
 git add bin/request-report.mjs
 git commit -m "Add a version command"
 git push -u origin feature/version-command
@@ -166,7 +165,7 @@ Merge that feature PR after its checks pass. Open **Actions → Update documenta
 and expand **Investigate and update documentation** to watch the agent's tools,
 skill loading, and final response.
 
-After the agent finishes, the workflow reruns tests and documentation checks,
+After the agent finishes, the workflow reruns documentation checks,
 rejects changes outside `README.md` and Markdown under `docs/`, and opens a PR
 from a `docs/update-…` branch. Review the result before merging.
 

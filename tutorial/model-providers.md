@@ -77,7 +77,7 @@ const instructions =
   'Use the docs-writing and humanize skills for documentation work. ' +
   'Review code changes, or audit the implementation if no diff is supplied. ' +
   'Create missing docs and update stale ones. Run every runnable example ' +
-  'in the docs and the project test suite. Fix documentation issues only. ' +
+  'in the docs and run npm run docs:check. Fix documentation issues only. ' +
   'Report what passed, what failed, and anything you could not verify. ' +
   'Write that summary to run-output/agent-summary.md, then reply with it.'
 ```
@@ -232,7 +232,6 @@ Commit your code, dependency, and workflow changes to `main`, then enable the bo
 
 ```sh
 npm run check
-npm test
 npm run docs:check
 gh variable set DOCS_AGENT_ENABLED --repo "$DOCS_REPO" --body "true"
 ```

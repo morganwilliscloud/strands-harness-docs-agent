@@ -69,7 +69,7 @@ the agent job can read GitHub data, while a separate publishing job can write PR
 | Existing role is not owned by setup | The command will not overwrite it. Inspect that role before choosing to rename/remove it or configure the integration manually. |
 | Custom OIDC subject | This helper supports GitHub's default repository subject. A custom subject or Actions environment needs a matching custom trust policy. |
 | Setup stopped partway through | Fix the reported issue and rerun. Once configuration begins, the bot remains disabled until setup finishes. |
-| Documentation job skipped | Confirm `DOCS_AGENT_ENABLED=true` and merge a change in `bin/`, `test/`, `fixtures/`, or package files. Markdown-only changes and initial repo creation are skipped. |
+| Documentation job skipped | Confirm `DOCS_AGENT_ENABLED=true` and merge a change in `bin/`, `fixtures/`, or package files. Markdown-only changes and initial repo creation are skipped. |
 | Bedrock invocation denied | Check model availability, region, organization policies, and permissions for both the main and background models. |
 | Comment does nothing | Submit a new conversation comment beginning `@docs-bot revise` on an open bot-created docs PR, as a repository writer. |
 | Saved session unavailable | Its artifact expired or was deleted. Start a new documentation job. |

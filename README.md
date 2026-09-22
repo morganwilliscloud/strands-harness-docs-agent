@@ -1,9 +1,10 @@
 # Build a documentation agent with Strands harness
 
 Merge an application change, get a documentation pull request, then leave feedback
-and have the agent revise that same PR. This tutorial uses the TypeScript
-documentation agent from the Request Report demo, including its writing skills,
-resumable conversations, and long-term memory.
+and have the agent revise that same PR. In this tutorial, you'll build a
+documentation agent with Strands harness and run it in GitHub Actions. You'll
+give it writing skills, continue conversations when you leave feedback, and
+preserve useful preferences across documentation jobs.
 
 Request Report is the included sample app. It helps developers inspect web-server
 traffic, spot failed requests, and check response times. You can run the tutorial

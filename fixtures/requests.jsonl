@@ -1,0 +1,8 @@
+{"path":"/","status":200,"durationMs":12}
+{"path":"/api/search","status":200,"durationMs":48}
+{"path":"/api/search","status":500,"durationMs":185}
+{"path":"/","status":200,"durationMs":9}
+{"path":"/api/export","status":200,"durationMs":76}
+{"path":"/api/search","status":200,"durationMs":52}
+{"path":"/api/export","status":503,"durationMs":240}
+{"path":"/","status":200,"durationMs":15}

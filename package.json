@@ -1,0 +1,23 @@
+{
+  "name": "request-report",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "docs:check": "node scripts/check-docs.mjs",
+    "check": "tsc --noEmit",
+    "agent:docs": "tsx .github/agents/docs-agent.ts",
+    "docs:patch": "node scripts/prepare-docs-patch.mjs",
+    "start": "tsx .github/agents/docs-agent.ts"
+  },
+  "dependencies": {
+    "@strands-agents/sdk": "1.17.0",
+    "tsx": "4.23.13",
+    "@strands-agents/harness": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.4",
+    "typescript": "6.0.3"
+  }
+}

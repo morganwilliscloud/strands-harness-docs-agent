@@ -1,9 +1,10 @@
-.agent-sessions/
-artifacts/
-.venv/
-__pycache__/
-*.py[cod]
-*.egg-info/
-.pytest_cache/
+node_modules/
 .env
+.env.*
+.agent/sessions/
+.agent/memory/
+run-output/
 .DS_Store
+*.log
+infra/generated/
+report.html

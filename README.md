@@ -1,271 +1,255 @@
 # Build a documentation agent with Strands harness
 
-This repository is a small, runnable example of an application agent: a documentation maintainer that can inspect a project, update Markdown, run only the checks you explicitly allow, and retain the conversation for a later feedback pass.
+Merge an application change, get a documentation pull request, then leave feedback
+and have the agent revise that same PR. This tutorial uses the TypeScript
+documentation agent from the Request Report demo, including its writing skills,
+resumable conversations, and long-term memory.
 
-It is designed to answer a practical question:
+Request Report is the included sample app. It helps developers inspect web-server
+traffic, spot failed requests, and check response times. You can run the tutorial
+in your own copy, then move the documentation bot into an existing project.
 
-> How do I move from “an agent can do this on my laptop” to “my application can run this job repeatedly and safely”?
+This is an example application, not the official documentation bot for Strands harness.
 
-The answer is an agent harness. Here, the **Strands harness** provides a complete optimized agent harness out of the box: it supplies built in tools, session persistence, context management, long term memory, model-provider integrations, intervention guardrails, and extension points. Your application supplies the job, custom tools, and controls.
+## The agent
 
-## What you will build
+The agent lives in [`.github/agents/docs-agent.ts`](.github/agents/docs-agent.ts):
 
-The agent in `src/docs_agent/` is given one narrowly defined job:
+```ts
+import { createHarness } from '@strands-agents/harness'
+import { getTask } from './workflow-support.js'
 
-1. Read the implementation and existing documentation.
-2. Update documentation that is affected by a requested change.
-3. Run the repository’s approved checks.
-4. Write a concise record of what it changed and verified.
+const docsAgent = await createHarness({
+  session: { id: process.env.DOCS_SESSION_ID },
+  instructions:
+    'Use the docs-writing and humanize skills for documentation work. ' +
+    'Review code changes, or audit the implementation if no diff is supplied. ' +
+    'Create missing docs and update stale ones. Run every runnable example ' +
+    'in the docs and the project test suite. Fix documentation issues only. ' +
+    'Report what passed, what failed, and anything you could not verify. ' +
+    'Write that summary to run-output/agent-summary.md, then reply with it.',
+})
 
-It cannot run arbitrary shell commands. It has custom tools that restrict reads and writes to this repository and a check runner with an explicit allowlist. That is intentional: useful application agents need capabilities, but they also need boundaries.
-
-```text
-request or event
-       |
-       v
-your application ---> Strands Agent ---> scoped project tools
-       |                    |                 |
-       |                    |                 +--> read source and docs
-       |                    |                 +--> write Markdown
-       |                    |                 +--> run approved checks
-       |                    |
-       |                    +--> local session snapshot
-       |
-       +--> artifact: summary for a reviewer or workflow
+const task = await getTask()
+try {
+  const result = await docsAgent.invoke(task, { limits: { turns: 30 } })
+  if (result.stopReason !== 'endTurn') throw new Error(`Agent stopped: ${result.stopReason}`)
+} finally {
+  await docsAgent.memoryManager?.flush()
+}
 ```
 
-## Why use a harness?
+`createHarness()` provides the agent's tuned system prompt, built-in tools, context
+management, sessions, and memory. Your `instructions` add the job. The `getTask()`
+helper supplies the code change or review feedback for this run. `invoke()` starts
+the work; the turn limit bounds one invocation, and `flush()` waits for pending
+memory writes before the process exits.
 
-Interactive coding agents are excellent collaborators while you build software. An application agent has a different operating model: it needs the same instructions, tools, controls, and observability every time it runs—whether the trigger is a command, a CI workflow, an event, or a background job.
+The workflow around this file supplies GitHub events, restores state, independently
+checks the proposed edits, and publishes the PR. The agent edits files and writes
+a summary. It does not receive the publishing job's GitHub write token.
 
-Strands gives you a library you run in your own process. That means the agent you prototype is the same agent your product invokes. You keep ownership of:
+## 1. Create your own repository
 
-- The instructions that define success.
-- The connected systems and the permissions they receive.
-- The model provider and deployment environment.
-- The checks required before a result is accepted.
-- The human review point for consequential changes.
+You need Node.js 22 or newer, Git, and the [GitHub CLI](https://cli.github.com/).
+Model-free checks work immediately; running the agent also needs model access.
 
-## Prerequisites
+Download this repository's source ZIP from **Code → Download ZIP**, extract it,
+and open a terminal in the extracted folder. This copies the sample app and bot
+without carrying the tutorial repository's Git history into your project.
 
-- Python 3.10 or newer.
-- A model provider supported by Strands.
-- Credentials configured for that provider.
-
-The sample defaults to the SDK’s Amazon Bedrock configuration. To use OpenAI instead, set `DOCS_AGENT_PROVIDER=openai`, `OPENAI_API_KEY`, and optionally `DOCS_AGENT_MODEL_ID`.
-
-> Never put credentials in a prompt, source file, generated report, or session directory. Use environment variables or your deployment platform’s secret store.
-
-## Step 1: install the example
-
-```bash
-git clone <your-fork-url>
-cd strands-harness-docs-agent
-
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+```sh
+gh auth login
+git init -b main
+git add .
+git commit -m "Add Request Report and its documentation agent"
+gh repo create my-docs-agent-demo --private --source=. --remote=origin --push
 ```
 
-On Windows PowerShell, activate the environment with:
+Choose your own repository name and visibility. The documentation workflow stays
+disabled until you explicitly enable it in step 3. Ordinary CI checks need no
+model credentials.
 
-```powershell
-.venv\Scripts\Activate.ps1
+Already have a repository? Follow [Copy the bot into another project](docs/adapting.md).
+Do not copy this repository's Git history or generated state into that project.
+
+## 2. Run the app and checks
+
+```sh
+npm ci
+npm run check
+npm test
+npm run docs:check
 ```
 
-## Step 2: configure a model
+These commands do not call a model. Try the sample app:
 
-### Default: Amazon Bedrock
-
-The SDK uses its Bedrock provider when `DOCS_AGENT_PROVIDER` is not set. Configure AWS credentials with your normal local or deployment workflow and make sure the model you select is available in the region you use.
-
-To select a model explicitly:
-
-```bash
-export DOCS_AGENT_MODEL_ID="your-bedrock-model-id"
+```sh verify
+node bin/request-report.mjs fixtures/requests.jsonl
 ```
 
-### OpenAI
+It prints request counts, server errors, p95 latency, and traffic by route.
+You can also generate an interactive HTML report:
 
-```bash
-export DOCS_AGENT_PROVIDER=openai
-export OPENAI_API_KEY="..."
-export DOCS_AGENT_MODEL_ID="gpt-4.1-mini"
+```sh
+node bin/request-report.mjs fixtures/requests.jsonl --format html > report.html
 ```
 
-This provider choice belongs in application configuration, not agent instructions. The job and the tools stay the same.
+Open `report.html` in a browser. Application details live in the
+[usage guide](docs/usage.md) and [log format guide](docs/log-format.md).
 
-## Step 3: run a focused task locally
+## 3. Connect the agent to your model account
 
-Start with a request that has a clear result and a bounded scope:
+This tutorial uses Amazon Bedrock through short-lived GitHub OIDC credentials.
+You create the role in **your own AWS account** and connect **your own GitHub
+repository**. No account IDs, roles, or credentials from the original demo are
+included.
 
-```bash
-python -m docs_agent.run \
-  --session-id quickstart \
-  --task "Read the source and docs. Improve the quickstart so it accurately explains how to run the documentation check. Run the docs check before you finish."
-```
+Follow [Set up Bedrock access](docs/setup.md). It walks through generating the
+policies, creating the role, allowing GitHub Actions to open PRs, and setting:
 
-The command creates:
-
-- `.agent-sessions/` — Strands snapshots of the conversation and state.
-- `artifacts/last-run.md` — a local handoff record containing the request and agent response.
-
-The first run is a prototype. Inspect the changed Markdown and the artifact before treating it as part of a workflow.
-
-## Step 4: give the same agent feedback
-
-Use the same session ID to continue the conversation on a later run:
-
-```bash
-python -m docs_agent.run \
-  --session-id quickstart \
-  --task "Revise the quickstart to add one short troubleshooting note for a missing virtual environment. Run the docs check and summarize the result."
-```
-
-`SnapshotSessionManager` restores the latest snapshot for that session. This is useful for a review loop: a person can request a correction without repeating the original task, and the agent can retain relevant context from its earlier work.
-
-For a CI environment, persist `.agent-sessions/` only when that continuity is intentional. Session data may contain tool results and conversation content, so treat it as application data and secure it accordingly.
-
-## Step 5: understand the harness
-
-The key construction lives in `src/docs_agent/agent.py`:
-
-```python
-agent = Agent(
-    model=build_model(),
-    system_prompt=SYSTEM_PROMPT,
-    tools=[
-        list_project_files,
-        read_project_file,
-        write_project_file,
-        run_project_check,
-    ],
-    context_manager="auto",
-    session_manager=session_manager,
-)
-```
-
-Each field has a distinct job:
-
-| Piece | Why it is here |
+| Repository variable | Purpose |
 | --- | --- |
-| `model` | Keeps the provider choice in configuration. |
-| `system_prompt` | Defines the job, quality bar, and limits. |
-| `tools` | Gives the model carefully scoped ways to affect the project. |
-| `context_manager="auto"` | Lets the SDK manage long-running context rather than leaving every tool result in the active conversation. |
-| `session_manager` | Persists the conversation and state so a later run can continue it. |
+| `AWS_ROLE_ARN` | The IAM role you create for this repository |
+| `AWS_ACCOUNT_ID` | Your AWS account ID |
+| `AWS_REGION` | Your Bedrock region |
+| `DOCS_AGENT_ENABLED` | Set to `true` only after setup |
 
-The point is not to give an agent every possible tool. Start with the smallest tool set that can complete the job. Add a capability only when you can explain the permission, the failure mode, and how you will evaluate it.
+The pinned published package is `@strands-agents/harness@0.1.0`. Its default main
+model is Bedrock Claude Opus 5, with Haiku for background extraction/summarization.
+The filmed development build used Opus 4.8. The agent code is unchanged; the
+package's default model has changed. Confirm model availability in your account.
 
-## Step 6: make the agent useful for your application
+Strands harness supports other model providers. Bedrock is the configuration
+implemented by this workflow; changing providers also means changing credentials
+and removing the Bedrock step. See [Adapt the model provider](docs/adapting.md#change-the-model-provider).
+Bedrock invocations and GitHub runner usage can incur charges.
 
-The sample agent is intentionally generic. Its real value comes from the application-specific seams.
+## 4. Merge a change and watch the bot work
 
-### Give it instructions it can follow
+The sample includes a small source-and-test patch that adds a `--version` command.
+It deliberately leaves the documentation for the bot to update.
 
-The system prompt tells the agent to prefer small, accurate edits; cite the source it used in its summary; and avoid changing application code. In your project, replace that with the policies that matter:
-
-- Which directories it may modify.
-- What “done” means for a task.
-- Which verification steps are mandatory.
-- When it should stop and ask a person for help.
-
-### Add domain skills without repeating yourself
-
-`skills/documentation/SKILL.md` is a small local writing guide. The agent is told to read it before editing documentation. This lets you store durable guidance—voice, structure, release-note conventions, security language—alongside the project rather than pasting it into every request.
-
-### Connect the systems that matter
-
-The custom project tools are a safe starting point, not a complete integration layer. Common next steps include:
-
-- A read-only issue tracker or support-search tool.
-- A tool that fetches a specific CI log or test report.
-- An MCP server for an approved internal system.
-- A structured API client that creates a draft for human review.
-
-Make the narrow operation a tool. Avoid giving a broad network, database, or shell capability when a focused tool can solve the job.
-
-### Keep the reviewable output outside the conversation
-
-The agent returns prose, but the application also writes `artifacts/last-run.md`. In a production service, this record could become a pull-request comment, a job log, a review UI, or an event payload. A reviewer should be able to see:
-
-1. What request triggered the work.
-2. Which files changed.
-3. What was verified.
-4. What remains uncertain.
-
-## GitHub Actions starter
-
-The workflow at `.github/workflows/documentation-agent.yml` is deliberately manual (`workflow_dispatch`). It is a safe way to prove the setup in your own repository before connecting it to pull-request comments, merges, schedules, or external events.
-
-Add provider credentials as repository or environment secrets. Then trigger it from the Actions tab and supply a narrow task.
-
-Before enabling event-driven writes, decide:
-
-- Which events are trusted enough to invoke the agent.
-- Whether external contributors can influence the prompt.
-- Which branch and files the agent can modify.
-- Whether the workflow opens a draft or changes files directly.
-- Where the session snapshots and run artifacts may be stored.
-
-For most teams, the first automated version should create a reviewable draft and leave the merge decision to a person.
-
-## Testing without model credentials
-
-The repository’s unit tests do not call a model. They validate the local controls:
-
-```bash
-pytest
-python scripts/check_docs.py
+```sh
+git switch -c feature/version-command
+git apply examples/add-version.patch
+npm test
+git add bin/request-report.mjs test/report.test.mjs
+git commit -m "Add a version command"
+git push -u origin feature/version-command
+gh pr create --base main --title "Add a version command" \
+  --body "Add --version to Request Report. Let the documentation agent update its usage guide after merge."
 ```
 
-That separation matters. You can test path boundaries, allowed commands, prompt construction, and generated artifacts deterministically. Then run a small number of provider-backed tasks as integration tests.
+Merge that feature PR after its checks pass. Open **Actions → Update documentation**
+and expand **Investigate and update documentation** to watch the agent's tools,
+skill loading, and final response.
 
-## Use cases that fit this pattern
+After the agent finishes, the workflow reruns tests and documentation checks,
+rejects changes outside `README.md` and Markdown under `docs/`, and opens a PR
+from a `docs/update-…` branch. Review the result before merging.
 
-This tutorial uses documentation because the result is easy to inspect. The same harness pattern works when an agent has a clear job, constrained access, and an observable handoff:
+The example change can be applied once. For later runs, make another application
+change. For a manual run, use **Run workflow** and supply a full `base_sha` that
+is an ancestor of `main`. Markdown-only merges do not trigger another docs run.
 
-- Investigate an operational alert and prepare a triage report.
-- Turn approved release notes into documentation updates.
-- Check a data-quality rule and prepare an exception summary.
-- Gather evidence for a support response and draft it for review.
-- Review a repository after a merge and suggest targeted follow-up work.
+## 5. Give it feedback
 
-The important design move is to start from the outcome, then give the agent only the context and operations it needs to achieve that outcome.
-
-## Production checklist
-
-Before moving beyond a local experiment, answer these questions explicitly:
-
-- Are inputs from users, issue comments, or fetched pages treated as untrusted data?
-- Do tools enforce least privilege independently of the model’s instructions?
-- Do write operations go through a review or approval point where needed?
-- Are secrets excluded from prompts, logs, session data, and output artifacts?
-- Are model, tool, and application events traced well enough to investigate failures?
-- Are evaluations checking the job’s actual quality, not merely whether a tool was called?
-- Do you have limits for time, token use, retries, and concurrent work?
-
-Strands provides the agent runtime and extension points. Safe operation is still an application design responsibility.
-
-## Repository map
+On the **open documentation PR**, submit a new conversation comment:
 
 ```text
-src/docs_agent/
-  agent.py          # agent, model configuration, scoped tools, session manager
-  run.py            # command-line entry point and run artifact writer
-scripts/check_docs.py # deterministic local Markdown validation
-skills/documentation/ # durable project-specific writing guidance
-.github/workflows/    # manual CI starting point
-tests/                # tests for local boundaries and documentation checks
+@docs-bot revise Add a troubleshooting example for passing an input file together with --version. Run it and verify stderr and the exit status.
 ```
 
-## Learn more
+`@docs-bot` is a command prefix, not a GitHub user; no mention dropdown is expected.
+Only repository writers can trigger a revision. Editing an old comment does not
+trigger it. The workflow restores this PR's conversation and passes the same
+session ID to Strands harness. Your comment becomes the next request.
 
-- [Strands Agents documentation](https://strandsagents.com/)
-- [Python SDK source](https://github.com/strands-agents/harness-sdk/tree/main/strands-py)
-- [Session management](https://strandsagents.com/docs/user-guide/concepts/agents/session-management/)
-- [Tools and safety guidance](https://strandsagents.com/docs/user-guide/safety-security/)
+After validation, the publishing job updates the **same PR** and posts the summary.
+In the logs, look for `Resuming PR #…` and the count of prior messages.
+Keep this PR open until you finish the feedback exercise.
 
-## License
+## What Strands harness handles
 
-This tutorial is licensed under the Apache License 2.0. See [LICENSE](LICENSE).
+The factory gives this agent capabilities that would otherwise need wiring:
+
+- **A tuned system prompt.** `instructions` extends it with documentation-specific work.
+- **File and shell tools.** The agent can inspect code, update Markdown, and run examples.
+  Web fetching is also built in; native web search depends on provider support.
+- **Context management.** Large tool results can be offloaded and older conversation
+  turns summarized, with tools to retrieve offloaded content.
+- **Prompt caching where supported.** Reused input can be cached through the provider.
+  This example does not promise a specific cache hit rate or cost reduction.
+- **Skills.** Guidance in [`.agent/skills`](.agent/skills) is discovered automatically.
+  The maintainer skill defines the job; writing and humanize skills guide the prose.
+- **Task tracking, delegation, and programmatic tool calling.** These are available
+  defaults; the model chooses whether to use them for a given task.
+- **Sessions and long-term memory.** Strands harness manages conversation state and
+  extracts useful facts for later tasks. GitHub Actions preserves the files.
+
+You can override defaults and add tools or MCP integrations without replacing the agent.
+
+### Sessions are conversations; memory is shared knowledge
+
+Each new code-change job starts a session. A revision restores only that job's
+saved session. A separate artifact contains shared repository memory, so a new
+session can still retrieve useful preferences learned from earlier PRs.
+
+For example, tell the bot: “For future docs, put runnable examples before option
+tables.” Memory extraction is model-driven; not every comment becomes a memory.
+The workflow also collects new authorized review feedback from earlier docs PRs.
+Ordinary comments and inline reviews are collected on the next run, but only the
+explicit command above triggers an immediate revision.
+
+The model extracts memory into Markdown files. The pinned version's default
+retrieval uses keyword matching, not a vector database. The final `flush()` waits
+for extraction before saving. Use separate memory stores for unrelated projects
+or customers; changing a session ID alone does not isolate long-term memory.
+
+Artifacts are retained for 90 days. The scripts select the relevant session and
+latest successful memory snapshot; they do not download every previous session.
+If a PR session expires, revision fails explicitly. Missing shared memory means
+a fresh memory store. See [State and workflow details](.github/workflow-state.md).
+
+## Use the bot in your application
+
+Start with the sample to learn the full loop, then follow
+[Copy the bot into another project](docs/adapting.md). You will keep the agent,
+workflow, state scripts, and skills, and customize the task, watched paths,
+validation commands, and allowed documentation paths for your app.
+
+The agent runs inside the GitHub runner and can execute commands. The Markdown
+allowlist validates its output; it is not an execution sandbox. Use this sample
+with code and maintainers you trust. The agent has read-only GitHub permissions
+and model-invocation access; a separate job gets permission to publish.
+
+Repository layout:
+
+```text
+.github/agents/docs-agent.ts       # the one agent entry point
+.github/agents/workflow-support.ts # task text, including review feedback
+.github/workflows/docs.yml         # trigger, restore, run, validate, publish
+.agent/skills/                    # documentation and writing guidance
+scripts/docs-session.mjs           # restore/save one documentation job
+scripts/docs-memory.mjs            # shared memory and reviewer feedback
+scripts/prepare-docs-patch.mjs      # independent checks and Markdown patch
+scripts/publish-docs-pr.mjs         # create or revise the PR
+bin/                              # Request Report sample application
+docs/                             # app docs, setup, and adaptation guide
+examples/add-version.patch        # a code change for the first exercise
+```
+
+To stop automatic runs, set `DOCS_AGENT_ENABLED` to `false`. Cleanup steps and
+troubleshooting are in the [setup guide](docs/setup.md#cleanup).
+
+Build an agent for a task you want automated, and share what you make.
+
+## Resources
+
+- [Strands harness documentation](https://strandsagents.com/docs/user-guide/harness/)
+- [Configuration and SDK composition](https://strandsagents.com/docs/user-guide/harness/composing-with-sdk/)
+- [CLI quickstart and code export](https://strandsagents.com/docs/user-guide/harness/quickstart/#build-an-agent-with-the-cli)
+- [Implementation provenance and validation](docs/implementation.md)
+
+Licensed under [Apache 2.0](LICENSE).

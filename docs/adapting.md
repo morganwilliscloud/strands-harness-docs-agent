@@ -82,31 +82,22 @@ The copied scripts assume a `main` default branch, `README.md` plus Markdown und
 `docs/`, and this workflow's artifact naming. If you change those conventions,
 update all matching checks and the OIDC trust policy together.
 
-Set up a **new repository-specific IAM trust policy** and variables using the
-[setup guide](setup.md). Copying files does not copy GitHub settings, secrets,
-permissions, roles, or artifacts.
+For Bedrock, set up a **new repository-specific IAM trust policy** and variables
+using the [setup guide](setup.md). For direct API providers, follow the
+[OpenAI, Anthropic, or OpenRouter guide](model-providers.md).
+Copying files does not copy GitHub settings, secrets, permissions, roles, or artifacts.
 
 Start with a small source change, inspect the docs PR, and request a revision.
 Run your tests and inspect state restoration before depending on the integration.
 
 ## Change the model provider
 
-The example leaves `model` unset to use the Strands harness default. A different
-supported provider can be selected in `createHarness()`; see the
-[Strands harness documentation](https://strandsagents.com/docs/user-guide/harness/).
-
-Changing that setting alone does not reconfigure GitHub Actions. For a provider
-such as OpenAI:
-
-1. Set the model in the same agent factory.
-2. Remove the AWS configuration checks and credential action from `docs.yml`.
-3. Supply that provider's API key from GitHub secrets to the agent step.
-4. Remove `id-token: write` if the workflow no longer needs OIDC.
-5. Check the provider's background-model selection and run a real task.
+The default agent leaves `model` unset for Bedrock. The
+[provider guide](model-providers.md) contains the exact agent edits, GitHub secret
+commands, and replacement workflow steps for OpenAI, Anthropic, and OpenRouter.
+It also explains which model handles background memory extraction.
 
 For a different Bedrock model, update the generated model policy as well.
-The package supports provider choice; this tutorial's credential setup is
-specifically for Bedrock.
 
 ## What to keep from the workflow
 

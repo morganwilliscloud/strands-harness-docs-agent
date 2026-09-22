@@ -101,6 +101,13 @@ Open `report.html` in a browser. Application details live in the
 
 ## 3. Connect the agent to your model account
 
+Choose a setup path:
+
+- **[Amazon Bedrock](docs/setup.md):** keep the agent as shown and use GitHub OIDC.
+- **[OpenAI, Anthropic, or OpenRouter](docs/model-providers.md):** add the model
+  configuration and replace the AWS credential step with your provider's API key.
+  No AWS account is needed for these paths.
+
 This tutorial uses Amazon Bedrock through short-lived GitHub OIDC credentials.
 You create the role in **your own AWS account** and connect **your own GitHub
 repository**. No account IDs, roles, or credentials from the original demo are
@@ -123,7 +130,7 @@ package's default model has changed. Confirm model availability in your account.
 
 Strands harness supports other model providers. Bedrock is the configuration
 implemented by this workflow; changing providers also means changing credentials
-and removing the Bedrock step. See [Adapt the model provider](docs/adapting.md#change-the-model-provider).
+and removing the Bedrock step. Follow the [provider setup instructions](docs/model-providers.md).
 Bedrock invocations and GitHub runner usage can incur charges.
 
 ## 4. Merge a change and watch the bot work

@@ -1,5 +1,8 @@
 # Set up Bedrock access for your repository
 
+Using OpenAI, Anthropic, or OpenRouter instead? Follow the
+[direct-provider setup](model-providers.md) and skip the AWS steps on this page.
+
 This setup uses your AWS account and your GitHub repository. It does not require
 an AWS access key stored in GitHub. GitHub obtains a short-lived OIDC token,
 and AWS exchanges it for permission to invoke the selected Bedrock models.

@@ -113,15 +113,14 @@ You create the role in **your own AWS account** and connect **your own GitHub
 repository**. No account IDs, roles, or credentials from the original demo are
 included.
 
-Follow [Set up Bedrock access](tutorial/setup.md). It walks through generating the
-policies, creating the role, allowing GitHub Actions to open PRs, and setting:
+Sign in to the AWS and GitHub CLIs, then run:
 
-| Repository variable | Purpose |
-| --- | --- |
-| `AWS_ROLE_ARN` | The IAM role you create for this repository |
-| `AWS_ACCOUNT_ID` | Your AWS account ID |
-| `AWS_REGION` | Your Bedrock region |
-| `DOCS_AGENT_ENABLED` | Set to `true` only after setup |
+```sh
+npm run setup:bedrock -- YOUR-OWNER/YOUR-REPO us-east-1
+```
+
+This creates the repository-specific role, configures GitHub, and enables the bot.
+See [Bedrock setup](tutorial/setup.md) for prerequisites and troubleshooting.
 
 The pinned published package is `@strands-agents/harness@0.1.0`. Its default main
 model is Bedrock Claude Opus 5, with Haiku for background extraction/summarization.

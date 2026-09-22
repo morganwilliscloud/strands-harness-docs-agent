@@ -9,6 +9,7 @@
     "check": "tsc --noEmit",
     "agent:docs": "tsx .github/agents/docs-agent.ts",
     "docs:patch": "node scripts/prepare-docs-patch.mjs",
+    "setup:bedrock": "node scripts/setup-bedrock.mjs",
     "start": "tsx .github/agents/docs-agent.ts"
   },
   "dependencies": {

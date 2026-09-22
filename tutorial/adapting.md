@@ -17,7 +17,7 @@ scripts/docs-session.mjs
 scripts/docs-memory.mjs
 scripts/prepare-docs-patch.mjs
 scripts/publish-docs-pr.mjs
-scripts/prepare-bedrock.mjs
+scripts/setup-bedrock.mjs
 ```
 
 Copy `scripts/check-docs.mjs` only if you intend to adapt the sample's documentation
@@ -40,7 +40,8 @@ Add scripts for the agent and patch preparation:
 ```json
 {
   "agent:docs": "tsx .github/agents/docs-agent.ts",
-  "docs:patch": "node scripts/prepare-docs-patch.mjs"
+  "docs:patch": "node scripts/prepare-docs-patch.mjs",
+  "setup:bedrock": "node scripts/setup-bedrock.mjs"
 }
 ```
 

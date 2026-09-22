@@ -6,7 +6,7 @@ It is designed to answer a practical question:
 
 > How do I move from “an agent can do this on my laptop” to “my application can run this job repeatedly and safely”?
 
-The answer is an agent harness. Here, the **Strands Agents SDK is the harness**: it supplies the model-driven agent loop, tool calling, session persistence, context management, model-provider integrations, tracing hooks, and extension points. Your application supplies the job, boundaries, and controls.
+The answer is an agent harness. Here, the **Strands harness** provides a complete optimized agent harness out of the box: it supplies built in tools, session persistence, context management, long term memory, model-provider integrations, intervention guardrails, and extension points. Your application supplies the job, custom tools, and controls.
 
 ## What you will build
 

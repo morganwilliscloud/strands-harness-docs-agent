@@ -71,7 +71,7 @@ Choose your own repository name and visibility. The documentation workflow stays
 disabled until you explicitly enable it in step 3. Ordinary CI checks need no
 model credentials.
 
-Already have a repository? Follow [Copy the bot into another project](docs/adapting.md).
+Already have a repository? Follow [Copy the bot into another project](tutorial/adapting.md).
 Do not copy this repository's Git history or generated state into that project.
 
 ## 2. Run the app and checks
@@ -103,8 +103,8 @@ Open `report.html` in a browser. Application details live in the
 
 Choose a setup path:
 
-- **[Amazon Bedrock](docs/setup.md):** keep the agent as shown and use GitHub OIDC.
-- **[OpenAI, Anthropic, or OpenRouter](docs/model-providers.md):** add the model
+- **[Amazon Bedrock](tutorial/setup.md):** keep the agent as shown and use GitHub OIDC.
+- **[OpenAI, Anthropic, or OpenRouter](tutorial/model-providers.md):** add the model
   configuration and replace the AWS credential step with your provider's API key.
   No AWS account is needed for these paths.
 
@@ -113,7 +113,7 @@ You create the role in **your own AWS account** and connect **your own GitHub
 repository**. No account IDs, roles, or credentials from the original demo are
 included.
 
-Follow [Set up Bedrock access](docs/setup.md). It walks through generating the
+Follow [Set up Bedrock access](tutorial/setup.md). It walks through generating the
 policies, creating the role, allowing GitHub Actions to open PRs, and setting:
 
 | Repository variable | Purpose |
@@ -130,7 +130,7 @@ package's default model has changed. Confirm model availability in your account.
 
 Strands harness supports other model providers. Bedrock is the configuration
 implemented by this workflow; changing providers also means changing credentials
-and removing the Bedrock step. Follow the [provider setup instructions](docs/model-providers.md).
+and removing the Bedrock step. Follow the [provider setup instructions](tutorial/model-providers.md).
 Bedrock invocations and GitHub runner usage can incur charges.
 
 ## 4. Merge a change and watch the bot work
@@ -223,7 +223,7 @@ a fresh memory store. See [State and workflow details](.github/workflow-state.md
 ## Use the bot in your application
 
 Start with the sample to learn the full loop, then follow
-[Copy the bot into another project](docs/adapting.md). You will keep the agent,
+[Copy the bot into another project](tutorial/adapting.md). You will keep the agent,
 workflow, state scripts, and skills, and customize the task, watched paths,
 validation commands, and allowed documentation paths for your app.
 
@@ -244,12 +244,13 @@ scripts/docs-memory.mjs            # shared memory and reviewer feedback
 scripts/prepare-docs-patch.mjs      # independent checks and Markdown patch
 scripts/publish-docs-pr.mjs         # create or revise the PR
 bin/                              # Request Report sample application
-docs/                             # app docs, setup, and adaptation guide
+docs/                             # Request Report application documentation
+tutorial/                         # setup, providers, and adaptation guides
 examples/add-version.patch        # a code change for the first exercise
 ```
 
 To stop automatic runs, set `DOCS_AGENT_ENABLED` to `false`. Cleanup steps and
-troubleshooting are in the [setup guide](docs/setup.md#cleanup).
+troubleshooting are in the [setup guide](tutorial/setup.md#cleanup).
 
 Build an agent for a task you want automated, and share what you make.
 
@@ -258,6 +259,6 @@ Build an agent for a task you want automated, and share what you make.
 - [Strands harness documentation](https://strandsagents.com/docs/user-guide/harness/)
 - [Configuration and SDK composition](https://strandsagents.com/docs/user-guide/harness/composing-with-sdk/)
 - [CLI quickstart and code export](https://strandsagents.com/docs/user-guide/harness/quickstart/#build-an-agent-with-the-cli)
-- [Implementation provenance and validation](docs/implementation.md)
+- [Implementation provenance and validation](tutorial/implementation.md)
 
 Licensed under [Apache 2.0](LICENSE).

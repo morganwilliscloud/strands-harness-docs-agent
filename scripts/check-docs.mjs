@@ -9,7 +9,8 @@ function markdown(directory) {
   })
 }
 let count = 0
-for (const file of ['README.md', ...markdown('docs')]) {
+for (const file of ['README.md', ...markdown('docs'),
+  ...(existsSync('tutorial') ? markdown('tutorial') : [])]) {
   const text = readFileSync(file, 'utf8')
   for (const block of text.matchAll(/```sh verify\r?\n([\s\S]*?)```/g)) {
     for (const line of block[1].split('\n').map(x => x.trim()).filter(Boolean)) {

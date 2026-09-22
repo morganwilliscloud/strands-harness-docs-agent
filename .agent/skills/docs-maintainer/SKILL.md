@@ -14,6 +14,8 @@ application. Keep the README focused on the tutorial and preserve its setup step
 Put detailed application behavior, commands, and examples in docs/usage.md and
 docs/log-format.md. Update the README's sample-app section only when needed.
 Do not rewrite the tutorial or add launch messaging for an unrelated app change.
+The setup and provider guides in tutorial/ are for people building this bot.
+They are outside the allowed documentation-editing paths; do not modify them.
 Its documentation automation uses Strands harness; it is not the official
 documentation bot for that product. Always write the product name as
 “Strands harness”, with a lowercase h. Do not abbreviate the product name or use earlier product names in prose. Preserve actual API and package identifiers.

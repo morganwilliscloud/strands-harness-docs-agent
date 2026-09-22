@@ -107,28 +107,23 @@ Choose a setup path:
   configuration and replace the AWS credential step with your provider's API key.
   No AWS account is needed for these paths.
 
-This tutorial uses Amazon Bedrock through short-lived GitHub OIDC credentials.
-You create the role in **your own AWS account** and connect **your own GitHub
-repository**. No account IDs, roles, or credentials from the original demo are
-included.
-
-Sign in to the AWS and GitHub CLIs, then run:
+For **Bedrock**, sign in to the AWS and GitHub CLIs, then run:
 
 ```sh
 npm run setup:bedrock -- YOUR-OWNER/YOUR-REPO us-east-1
 ```
 
-This creates the repository-specific role, configures GitHub, and enables the bot.
-See [Bedrock setup](tutorial/setup.md) for prerequisites and troubleshooting.
+This creates a role in your AWS account, connects your GitHub repository, and
+enables the bot. See [Bedrock setup](tutorial/setup.md) for prerequisites and
+troubleshooting.
 
 The pinned published package is `@strands-agents/harness@0.1.0`. Its default main
 model is Bedrock Claude Opus 5, with Haiku for background extraction/summarization.
 Confirm model availability in your account.
 
-Strands harness supports other model providers. Bedrock is the configuration
-implemented by this workflow; changing providers also means changing credentials
-and removing the Bedrock step. Follow the [provider setup instructions](tutorial/model-providers.md).
-Bedrock invocations and GitHub runner usage can incur charges.
+For **OpenAI, Anthropic, or OpenRouter**, skip that command and complete the
+[provider guide](tutorial/model-providers.md), then return to step 4.
+Model calls and GitHub runner usage can incur charges.
 
 ## 4. Merge a change and watch the bot work
 

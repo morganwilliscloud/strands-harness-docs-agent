@@ -228,11 +228,17 @@ You can skip the AWS setup guide entirely for these providers. You do still need
 to create and approve pull requests** in your repository. Organization policy
 must also permit it.
 
-Commit your code, dependency, and workflow changes to `main`, then enable the bot:
+Run the checks:
 
 ```sh
 npm run check
 npm run docs:check
+```
+
+Commit and push your code, dependency, and workflow changes to `main` in your
+GitHub repository. Then enable the bot:
+
+```sh
 gh variable set DOCS_AGENT_ENABLED --repo "$DOCS_REPO" --body "true"
 ```
 

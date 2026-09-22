@@ -46,9 +46,8 @@ Add scripts for the agent and patch preparation:
 ```
 
 Define `docs:check` to verify your application's documentation examples and links.
-The patch preparer runs it before publication. Merge the TypeScript
-configuration if you want the agent included
-in type checks. Commit the updated lockfile.
+The patch preparer runs it before publication. Merge the TypeScript configuration
+if you want the agent included in type checks. Commit the updated lockfile.
 
 For a Python, Go, or other application, the bot can still run in TypeScript.
 Install that language's runtime in the workflow and make the documentation

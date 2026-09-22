@@ -66,19 +66,39 @@ billed through the provider whose key you use.
 
 ## 2. Configure the same agent
 
-In `.github/agents/docs-agent.ts`, add this before `const docsAgent`:
+In `.github/agents/docs-agent.ts`, keep the existing imports. Read your model ID
+and move the existing documentation instructions into a variable:
 
 ```ts
 const modelId = process.env.DOCS_MODEL_ID
 if (!modelId) throw new Error('Set DOCS_MODEL_ID to a model available to your provider account')
+
+const instructions =
+  'Use the docs-writing and humanize skills for documentation work. ' +
+  'Review code changes, or audit the implementation if no diff is supplied. ' +
+  'Create missing docs and update stale ones. Run every runnable example ' +
+  'in the docs and the project test suite. Fix documentation issues only. ' +
+  'Report what passed, what failed, and anything you could not verify. ' +
+  'Write that summary to run-output/agent-summary.md, then reply with it.'
 ```
 
-Then add **one** of the following model declarations.
+Replace the existing `const docsAgent = await createHarness(...)` declaration
+with **one** of the examples below. Each shows the model being passed directly
+into the factory. Keep the existing `getTask()`, `invoke()`, and `flush()` code
+after it.
 
 ### OpenAI
 
 ```ts
 const model = `openai/${modelId}`
+
+const docsAgent = await createHarness({
+  model,
+  effort: 'auto',
+  builtinTools: { web_search: false },
+  session: { id: process.env.DOCS_SESSION_ID },
+  instructions,
+})
 ```
 
 The adapter reads `OPENAI_API_KEY` and uses the Responses API. Strands harness
@@ -88,6 +108,14 @@ configures reasoning for the selected model; prompt caching is handled by OpenAI
 
 ```ts
 const model = `anthropic/${modelId}`
+
+const docsAgent = await createHarness({
+  model,
+  effort: 'auto',
+  builtinTools: { web_search: false },
+  session: { id: process.env.DOCS_SESSION_ID },
+  instructions,
+})
 ```
 
 The adapter reads `ANTHROPIC_API_KEY` and calls Anthropic directly. These calls
@@ -102,7 +130,7 @@ Add this import at the top of the file:
 import { OpenAIModel } from '@strands-agents/sdk/models/openai'
 ```
 
-Then declare the model:
+Then create the model and pass it into `createHarness()`:
 
 ```ts
 if (!process.env.OPENROUTER_API_KEY) throw new Error('Set OPENROUTER_API_KEY')
@@ -111,6 +139,14 @@ const model = new OpenAIModel({
   modelId,
   apiKey: process.env.OPENROUTER_API_KEY,
   clientConfig: { baseURL: 'https://openrouter.ai/api/v1' },
+})
+
+const docsAgent = await createHarness({
+  model,
+  effort: 'auto',
+  builtinTools: { web_search: false },
+  session: { id: process.env.DOCS_SESSION_ID },
+  instructions,
 })
 ```
 
@@ -124,16 +160,7 @@ automatically receive provider-specific reasoning or cache configuration from
 Strands harness. Caching and reasoning behavior depend on the routed model and
 any supported settings you add to the adapter.
 
-### Add the selected model to the factory
-
-For any of the three choices, add these options to the existing `createHarness()`
-call. Keep the existing `session`, `instructions`, `invoke()`, and `flush()` code:
-
-```ts
-  model,
-  effort: 'auto',
-  builtinTools: { web_search: false },
-```
+### Reasoning and web search
 
 `effort: 'auto'` selects the recommended reasoning setting for a provider string.
 For an explicit model instance, such as the OpenRouter adapter, configure reasoning

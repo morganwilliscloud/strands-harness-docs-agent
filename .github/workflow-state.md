@@ -44,8 +44,9 @@ expire the repository's saved memory.
 ## One agent entry point
 
 Both `npm start` and `npm run agent:docs` execute the `.github/agents/docs-agent.ts`.
-It creates `docsAgent`, calls `docsAgent.invoke()`, and flushes
-pending memory extraction. Local execution audits the checked-out repository;
+It creates `docsAgent` with `await using` and calls `docsAgent.invoke()`. On scope
+exit, including a thrown error, disposal calls `shutdown()` and waits for pending
+memory extraction. Local execution audits the checked-out repository;
 Actions supplies a validated commit range and authorized review feedback.
 
 `.github/agents/workflow-support.ts` only builds the prompt. The agent's

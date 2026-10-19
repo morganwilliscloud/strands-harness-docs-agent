@@ -4,8 +4,8 @@ Choose one provider for your copy of the tutorial. You will edit the same
 `.github/agents/docs-agent.ts` and `.github/workflows/docs.yml` files. The job,
 skills, PR publishing, sessions, and memory persistence stay the same.
 
-These instructions target the pinned `@strands-agents/harness@0.1.0` and
-`@strands-agents/sdk@1.17.0`. Provider clients are optional dependencies:
+These instructions target the pinned `@strands-agents/harness@0.3.0` and
+`@strands-agents/sdk@1.21.0`. Provider clients are optional dependencies:
 install the one you need below. You do not need to replace Strands harness.
 
 ## 1. Choose a model and store your key
@@ -82,17 +82,18 @@ const instructions =
   'Write that summary to run-output/agent-summary.md, then reply with it.'
 ```
 
-Replace the existing `const docsAgent = await createHarness(...)` declaration
+Replace the existing `await using docsAgent = await createHarness(...)` declaration
 with **one** of the examples below. Each shows the model being passed directly
-into the factory. Keep the existing `getTask()`, `invoke()`, and `flush()` code
-after it.
+into the factory. Keep the existing `getTask()`, `invoke()`, and stop-reason check
+after it. `await using` runs shutdown and flushes pending memory when the scope
+exits, including when an error is thrown.
 
 ### OpenAI
 
 ```ts
 const model = `openai/${modelId}`
 
-const docsAgent = await createHarness({
+await using docsAgent = await createHarness({
   model,
   effort: 'auto',
   builtinTools: { web_search: false },
@@ -109,7 +110,7 @@ configures reasoning for the selected model; prompt caching is handled by OpenAI
 ```ts
 const model = `anthropic/${modelId}`
 
-const docsAgent = await createHarness({
+await using docsAgent = await createHarness({
   model,
   effort: 'auto',
   builtinTools: { web_search: false },
@@ -141,7 +142,7 @@ const model = new OpenAIModel({
   clientConfig: { baseURL: 'https://openrouter.ai/api/v1' },
 })
 
-const docsAgent = await createHarness({
+await using docsAgent = await createHarness({
   model,
   effort: 'auto',
   builtinTools: { web_search: false },

@@ -12,9 +12,9 @@
     "start": "tsx .github/agents/docs-agent.ts"
   },
   "dependencies": {
-    "@strands-agents/sdk": "1.17.0",
-    "tsx": "4.23.13",
-    "@strands-agents/harness": "0.1.0"
+    "@strands-agents/harness": "0.3.0",
+    "@strands-agents/sdk": "1.21.0",
+    "tsx": "4.23.13"
   },
   "devDependencies": {
     "@types/node": "25.9.4",

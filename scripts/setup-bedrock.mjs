@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-// Defaults in @strands-agents/harness 0.1.0. Update these when changing models.
+// Defaults in @strands-agents/harness 0.3.0. Update these when changing models.
 export const modelIds = [
   'anthropic.claude-opus-5',
   'anthropic.claude-haiku-4-5-20251001-v1:0',

@@ -1,7 +1,7 @@
 import { createHarness } from '@strands-agents/harness'
 import { getTask } from './workflow-support.js'
 
-const docsAgent = await createHarness({
+await using docsAgent = await createHarness({
   session: { id: process.env.DOCS_SESSION_ID },
   instructions:
     'Use the docs-writing and humanize skills for documentation work. ' +
@@ -13,9 +13,5 @@ const docsAgent = await createHarness({
 })
 
 const task = await getTask()
-try {
-  const result = await docsAgent.invoke(task, { limits: { turns: 30 } })
-  if (result.stopReason !== 'endTurn') throw new Error(`Agent stopped: ${result.stopReason}`)
-} finally {
-  await docsAgent.memoryManager?.flush()
-}
+const result = await docsAgent.invoke(task, { limits: { turns: 30 } })
+if (result.stopReason !== 'endTurn') throw new Error(`Agent stopped: ${result.stopReason}`)

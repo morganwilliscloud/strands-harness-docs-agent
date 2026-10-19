@@ -20,7 +20,7 @@ The agent lives in [`.github/agents/docs-agent.ts`](.github/agents/docs-agent.ts
 import { createHarness } from '@strands-agents/harness'
 import { getTask } from './workflow-support.js'
 
-const docsAgent = await createHarness({
+await using docsAgent = await createHarness({
   session: { id: process.env.DOCS_SESSION_ID },
   instructions:
     'Use the docs-writing and humanize skills for documentation work. ' +
@@ -32,19 +32,17 @@ const docsAgent = await createHarness({
 })
 
 const task = await getTask()
-try {
-  const result = await docsAgent.invoke(task, { limits: { turns: 30 } })
-  if (result.stopReason !== 'endTurn') throw new Error(`Agent stopped: ${result.stopReason}`)
-} finally {
-  await docsAgent.memoryManager?.flush()
-}
+const result = await docsAgent.invoke(task, { limits: { turns: 30 } })
+if (result.stopReason !== 'endTurn') throw new Error(`Agent stopped: ${result.stopReason}`)
 ```
 
 `createHarness()` provides the agent's tuned system prompt, built-in tools, context
 management, sessions, and memory. Your `instructions` add the job. The `getTask()`
 helper supplies the code change or review feedback for this run. `invoke()` starts
-the work; the turn limit bounds one invocation, and `flush()` waits for pending
-memory writes before the process exits.
+the work; the turn limit bounds one invocation. `await using` calls the agent's
+`shutdown()` when this module's scope exits, on success or a thrown error, and
+waits for pending memory extraction and writes. This keeps extraction batched
+instead of changing it to run every turn.
 
 The workflow around this file supplies GitHub events, restores state, independently
 checks the proposed edits, and publishes the PR. The agent edits files and writes
@@ -117,7 +115,8 @@ This creates a role in your AWS account, connects your GitHub repository, and
 enables the bot. See [Bedrock setup](tutorial/setup.md) for prerequisites and
 troubleshooting.
 
-The pinned published package is `@strands-agents/harness@0.1.0`. Its default main
+The pinned published package is `@strands-agents/harness@0.3.0`, with
+`@strands-agents/sdk@1.21.0`. Its default main
 model is Bedrock Claude Opus 5, with Haiku for background extraction/summarization.
 Confirm model availability in your account.
 
@@ -218,8 +217,9 @@ Ordinary comments and inline reviews are collected on the next run, but only the
 explicit command above triggers an immediate revision.
 
 The model extracts memory into Markdown files. The pinned version's default
-retrieval uses keyword matching, not a vector database. The final `flush()` waits
-for extraction before saving. Use separate memory stores for unrelated projects
+retrieval uses keyword matching, not a vector database. Automatic shutdown through
+`await using` waits for pending extraction before the workflow saves the memory
+artifact. Use separate memory stores for unrelated projects
 or customers; changing a session ID alone does not isolate long-term memory.
 
 Artifacts are retained for 90 days. The scripts select the relevant session and

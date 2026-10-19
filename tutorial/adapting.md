@@ -32,7 +32,7 @@ policies, or another repository's Actions artifacts.
 In an existing Node project, merge into its package files instead of replacing them:
 
 ```sh
-npm install --save-exact @strands-agents/harness@0.1.0 @strands-agents/sdk@1.17.0 tsx@4.23.13
+npm install --save-exact @strands-agents/harness@0.3.0 @strands-agents/sdk@1.21.0 tsx@4.23.13
 ```
 
 Add scripts for the agent and patch preparation:
@@ -71,7 +71,7 @@ infra/generated/
 | Location | What to change |
 | --- | --- |
 | `.agent/skills/docs-maintainer/SKILL.md` | Replace Request Report instructions, example commands, and documentation conventions with your project's. Keep instructions to verify work and avoid publishing from the agent. |
-| `.github/agents/docs-agent.ts` | Adjust the documentation job. Keep the session ID and flush if you want the demonstrated continuity. |
+| `.github/agents/docs-agent.ts` | Adjust the documentation job. Keep the session ID and `await using` declaration for session continuity and memory cleanup. |
 | `.github/workflows/docs.yml` | Change `on.push.paths` to your application paths and install required runtimes. Keep Markdown-only updates from triggering an endless docs loop. |
 | `scripts/prepare-docs-patch.mjs` | Set allowed output paths and the checks to run. |
 | `scripts/docs-session.mjs` | Keep `docPath()` aligned with those allowed paths. |
